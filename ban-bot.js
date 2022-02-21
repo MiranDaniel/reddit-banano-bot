@@ -22,7 +22,7 @@ const BANANO_REPRESENTATIVE = "<YOUR_BANANO_REPRESENTATIVE>" //The public ban_ a
 //reddit api information. THIS INFORMATION IS OBTAINED THROUGH REDDIT API
 const REDDIT_USER_AGENT = '<NAME_OF_REDDIT_AGENT>' //
 const REDDIT_CLIENT = '<CLIENT_ID>' //CLIENT ID OF THE REDDIT AGENT
-const REDDIT_sECRET = '<SECRET_KEY>', //SECRET KEY OF REDDIT AGENT
+const REDDIT_sECRET = '<SECRET_KEY>' //SECRET KEY OF REDDIT AGENT
 const REDDIT_USERNAME = '<USERNAME_OF_REDDIT_AGENT_MAKER>' //USERNAME OF WHOMEVER MADE THE REDDIT AGENT
 const REDDIT_PASSWORD = '<PASSWORD_OF_REDDIT_AGENT_MAKER>' //PASSWORD OF WHOMEVER MADE THE REDDIT AGENT
 
@@ -40,8 +40,8 @@ let ACCOUNT_INFO = {
 
 async function rpc(body) {
 	//return (await axios.post('https://node.shrynode.me/api', body, NANO_NODE_AUTH_HEADER)).data;
-    
-    return (await axios.post('https://kaliumapi.appditto.com/api', body)).data;
+
+	return (await axios.post('https://kaliumapi.appditto.com/api', body)).data;
 }
 
 function toRaw(bigNum) {
@@ -50,13 +50,13 @@ function toRaw(bigNum) {
 
 async function sendTip(destination) {
 	console.log("Sending tip to", destination);
-    
-    const work_response = await axios.post(BANANODE, {
-        action: "work_generate",
-        hash: ACCOUNT_INFO.FRONTIER
-        })
-    
-    //console.log("work_response: " + JSON.stringify(work_response.data));
+
+	const work_response = await axios.post(BANANODE, {
+		action: "work_generate",
+		hash: ACCOUNT_INFO.FRONTIER
+	})
+
+	//console.log("work_response: " + JSON.stringify(work_response.data));
 	// const work_response = await axios.post("https://bpow.banano.cc/service/", {
 	// 	hash: ACCOUNT_INFO.FRONTIER,
 	// 	user: "x",
@@ -68,29 +68,29 @@ async function sendTip(destination) {
 	const AFTER_BALANCE = ACCOUNT_INFO.CURRENT_BALANCE.minus(TIP_AMOUNT);
 
 	const block_json = {
-	 	balance: toRaw(AFTER_BALANCE),
-	 	link: destination,
-	 	previous: ACCOUNT_INFO.FRONTIER,
-	 	representative: BANANO_REPRESENTATIVE, // banano rat pie
-	 	work: work
-	 };
+		balance: toRaw(AFTER_BALANCE),
+		link: destination,
+		previous: ACCOUNT_INFO.FRONTIER,
+		representative: BANANO_REPRESENTATIVE, // banano rat pie
+		work: work
+	};
 
-    //console.log("AFTER_BALANCE: " + toRaw(AFTER_BALANCE));
+	//console.log("AFTER_BALANCE: " + toRaw(AFTER_BALANCE));
 	//const block = nanocurrency.createBlock(NANO_PRIVATE_KEY, block_json);
-     const block_data = await axios.post(BANANODE, {
-        action: "block_create",
-        json_block: true,
-        type: "state",
-        balance: toRaw(AFTER_BALANCE),
-        key: NANO_PRIVATE_KEY,
-        representative: BANANO_REPRESENTATIVE,
-        link: destination,
-        previous: ACCOUNT_INFO.FRONTIER
-      })
+	const block_data = await axios.post(BANANODE, {
+		action: "block_create",
+		json_block: true,
+		type: "state",
+		balance: toRaw(AFTER_BALANCE),
+		key: NANO_PRIVATE_KEY,
+		representative: BANANO_REPRESENTATIVE,
+		link: destination,
+		previous: ACCOUNT_INFO.FRONTIER
+	})
 
-    //console.log("block: " + JSON.stringify(block_data.data));
+	//console.log("block: " + JSON.stringify(block_data.data));
 	ACCOUNT_INFO.FRONTIER = block_data.data.hash;
-    console.log("new block data hash: " + block_data.data.hash)
+	console.log("new block data hash: " + block_data.data.hash)
 	const publish_resp = await axios.post("https://kaliumapi.appditto.com/api", {
 		"action": "process",
 		"json_block": "true",
@@ -98,13 +98,13 @@ async function sendTip(destination) {
 		"block": block_data.data.block
 	});
 
-    //console.log(publish_resp.data)
+	//console.log(publish_resp.data)
 	ACCOUNT_INFO.CURRENT_BALANCE = new BigNumber(block_data.data.block.balance);
 	console.log("New balance: " + toRaw(ACCOUNT_INFO.CURRENT_BALANCE))
-    if ("error" in publish_resp) {
-        console.error("Something wrong happened sending nano", publish_resp);
-        process.exit(1);
-    }
+	if ("error" in publish_resp) {
+		console.error("Something wrong happened sending nano", publish_resp);
+		process.exit(1);
+	}
 
 	console.log("[SEND SUCCESS] RPC Response:", publish_resp.data, "BALANCE LEFT:", toRaw(ACCOUNT_INFO.CURRENT_BALANCE));
 }
@@ -115,7 +115,7 @@ function saveData() {
 }
 
 async function checkComment(comment) {
-    console.log("Checking comment ....");
+	console.log("Checking comment ....");
 	if (!("body_html" in comment)) return null;
 	if (!("author") in comment) return null;
 	if (comment.author.name === "[deleted]") return null;
@@ -125,12 +125,12 @@ async function checkComment(comment) {
 	if (prefix_index == -1) return null;
 	const found_address = comment.body_html.substring(prefix_index, prefix_index + 64);
 	if (found_address.length !== 64) {
-		 console.log("Found address but not 64 characters: ", found_address);
+		console.log("Found address but not 64 characters: ", found_address);
 		return null;
 	}
 
 	if (!validateAddress(found_address)) {
-		 console.log("Address did not pass regex check or bad address:", found_address);
+		console.log("Address did not pass regex check or bad address:", found_address);
 		return null;
 	}
 
@@ -148,7 +148,7 @@ async function checkComment(comment) {
 
 		process.exit();
 	}
-    console.log("Found address: " + found_address);
+	console.log("Found address: " + found_address);
 	return found_address;
 }
 
@@ -158,13 +158,13 @@ async function setup() {
 	ACCOUNT_INFO.FRONTIER = response.frontier;
 	ACCOUNT_INFO.CURRENT_BALANCE = new BigNumber(response.balance);
 
-    console.log(ACCOUNT_INFO);
+	console.log(ACCOUNT_INFO);
 	console.log("ACCOUNT_INFO.FRONTIER", ACCOUNT_INFO.FRONTIER);
 	console.log("ACCOUNT_INFO.BALANCE", toRaw(ACCOUNT_INFO.CURRENT_BALANCE));
 }
 
 async function pocket(hash, amount) {
-    const work_response = await axios.post("https://bpow.banano.cc/service/", {
+	const work_response = await axios.post("https://bpow.banano.cc/service/", {
 		hash: ACCOUNT_INFO.FRONTIER,
 		user: "x",
 		api_key: "x",
@@ -182,7 +182,7 @@ async function pocket(hash, amount) {
 	};
 
 	//const block = nanocurrency.createBlock(NANO_PRIVATE_KEY, block_json);
-    
+
 	ACCOUNT_INFO.FRONTIER = block.hash;
 
 	const publish_resp = await rpc({
@@ -194,23 +194,23 @@ async function pocket(hash, amount) {
 
 	if ("error" in publish_resp) {
 		console.log("error pocketing funds:", publish_resp);
-        process.exit(1);
+		process.exit(1);
 	}
 
 	ACCOUNT_INFO.CURRENT_BALANCE = new BigNumber(block.block.balance);
 }
 
-async function checkReceivableNano () {
-    console.log("Checking pending nano...");
-    const pending = await rpc({ action: "pending", account: NANO_PUBLIC_ADDRESS, count: 20, threshold: "100000000000000000000000000000" });
+async function checkReceivableNano() {
+	console.log("Checking pending nano...");
+	const pending = await rpc({ action: "pending", account: NANO_PUBLIC_ADDRESS, count: 20, threshold: "100000000000000000000000000000" });
 
-    for (let i = 0; i < Object.keys(pending.blocks).length; i++) {
-        const hash = Object.keys(pending.blocks)[i];
-        const amount = Object.values(pending.blocks)[i];
+	for (let i = 0; i < Object.keys(pending.blocks).length; i++) {
+		const hash = Object.keys(pending.blocks)[i];
+		const amount = Object.values(pending.blocks)[i];
 
-        console.log("Receiving block:", hash, amount);
-        await pocket(hash, amount);
-    }
+		console.log("Receiving block:", hash, amount);
+		await pocket(hash, amount);
+	}
 }
 
 const ACCOUNT = new snoowrap({
@@ -226,7 +226,7 @@ async function main() {
 
 	while (true) {
 		try {
-            //await checkReceivableNano();
+			//await checkReceivableNano();
 
 			console.log("Fetching thread...");
 
@@ -268,7 +268,7 @@ async function main() {
 				await sleep(30000);
 			} else {
 				console.log("Something wrong happened, waiting 5s before resuming:", e);
-                await sleep(5000);
+				await sleep(5000);
 			}
 		}
 	}
